@@ -1,0 +1,36 @@
+---
+# tasks file for common
+- name: copy vagrant user's .ssh to root
+  shell: rm -rf /root/.ssh ; cp -rp /home/vagrant/.ssh /root/. ; chown -R root:root /root/.ssh
+
+
+#####################################  
+# FIX PUPPET's BUSTED SSHD ...
+#####################################  
+
+- name: make sure yum-utils is installed
+  yum: name=yum-utils state=present
+
+- name: get the checksum for the current sshd_config
+  shell: md5sum /etc/ssh/sshd_config | awk '{print $1}'
+  register: sshdcsum
+
+- name: get the openssh-rpm
+  shell: cd /tmp ; yumdownloader openssh-server
+  when: sshdcsum.stdout == '8e4ebcf510601ca3dc0273b597f6c75a'
+
+- name: extract the rpm
+  shell: rm -rf /tmp/extract ; \
+         mkdir /tmp/extract ; \
+         cd /tmp/extract ; \
+         rpm2cpio ../openssh-server*.rpm | cpio -idmv
+  when: sshdcsum.stdout == '8e4ebcf510601ca3dc0273b597f6c75a'
+
+- name: copy the original config back into place
+  shell: rm /etc/ssh/sshd_config ; cp /tmp/extract/etc/ssh/sshd_config /etc/ssh/.
+  when: sshdcsum.stdout == '8e4ebcf510601ca3dc0273b597f6c75a'
+
+- name: restart ssh
+  shell: service sshd restart
+  when: sshdcsum.stdout == '8e4ebcf510601ca3dc0273b597f6c75a'
+

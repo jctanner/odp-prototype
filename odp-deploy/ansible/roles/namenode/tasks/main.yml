@@ -1,0 +1,90 @@
+---
+# tasks file for namenode
+- name: install packages
+  yum: name={{ item }} state=present
+  with_items:
+    - hadoop-hdfs-namenode
+    - hadoop-mapreduce
+    - hadoop-mapreduce-historyserver
+    - hadoop-httpfs
+    - hadoop-httpfs-server
+    - hadoop-yarn-resourcemanager
+    - hadoop-yarn-timelineserver
+    - hadoop-yarn-proxyserver
+
+- name: create symlinks in current
+  file: src=/usr/odp/0.9.0.1-56/{{ item }} dest=/usr/odp/current/{{ item }} state=link
+  with_items:
+    - etc
+    - hadoop
+    - hadoop-hdfs
+    - hadoop-yarn
+
+# /usr/odp/0.9.0.1-56/hadoop-yarn/etc/rc.d/init.d/hadoop-yarn-resourcemanager
+# /usr/odp/0.9.0.1-56/hadoop-hdfs/etc/rc.d/init.d/hadoop-hdfs-namenode
+# /usr/odp/0.9.0.1-56/etc/hadoop/conf.empty/hdfs-site.xml
+# /usr/odp/0.9.0.1-56/etc/hadoop/conf.empty/yarn-site.xml
+
+- name: create the config dir
+  file: path=/etc/hadoop/conf state=directory
+
+- name: copy config files to etc
+  shell: cp /usr/odp/current/etc/hadoop/conf.empty/* /etc/hadoop/conf/.
+
+- name: fix references to hdp in conf files
+  shell: sed -i.bak "s/\/hdp\//\/odp\//g" /etc/hadoop/conf/* && rm -rf /etc/hadoop/conf/*.bak
+
+- name: set javahome in conf files
+  lineinfile: 
+    line=". /etc/profile.d/java_home.sh"
+    state=present
+    dest=/etc/hadoop/conf/hadoop-env.sh
+
+- name: copy init scripts to init.d
+  shell: cp {{ item }} /etc/init.d/.
+  with_items:
+    - /usr/odp/current/hadoop-hdfs/etc/rc.d/init.d/hadoop-hdfs-namenode
+    - /usr/odp/current/hadoop-yarn/etc/rc.d/init.d/hadoop-yarn-resourcemanager
+    - /usr/odp/current/hadoop-yarn/etc/rc.d/init.d/hadoop-yarn-timelineserver
+    - /usr/odp/current/hadoop-yarn/etc/rc.d/init.d/hadoop-yarn-proxyserver
+
+- name: fix references to hdp in init scripts
+  shell: sed -i.bak "s/\/hdp\//\/odp\//g" /etc/init.d/hadoop* && rm -rf /etc/init.d/*.bak
+
+- name: fix HADOOP_HOME in init scripts
+  shell: sed -i.bak "s/hadoop-hdfs-\$SERVICE_NAME/hadoop-hdfs/g" /etc/init.d/hadoop* && rm -rf /etc/init.d/*.bak
+
+- name: fix HADOOP_HOME in init scripts
+  shell: sed -i.bak "s/WORKING_DIR\=\"\$HADOOP_HOME\"/WORKING_DIR\=\"\/var\/lib\/hadoop-hdfs\"/g" /etc/init.d/hadoop* && rm -rf /etc/init.d/*.bak
+
+- name: make sure the log directories exists
+  file: path=/usr/odp/current/hadoop/logs state=directory owner=hdfs group=hdfs
+
+# java.lang.IllegalArgumentException: Invalid URI for NameNode address (check fs.defaultFS): file:/// has no authority.
+- name: create the core-site.xml
+  template: src=core-site.xml.j2 dest=/etc/hadoop/conf/core-site.xml
+
+# Directory /tmp/hadoop-hdfs/dfs/name is in an inconsistent state: storage directory does not exist or is not accessible
+- name: make sure dirs exist
+  file: path={{ item }} state=directory owner=hdfs group=hdfs 
+  with_items:
+    - /tmp/hadoop-hdfs/dfs/name
+
+# java.io.IOException: NameNode is not formatted.
+# Re-format filesystem in Storage Directory /tmp/hadoop-hdfs/dfs/name ? (Y or N)
+- name: format the namenode
+  shell: echo -e "N\n" | hadoop namenode -format
+  sudo: true
+  sudo_user: hdfs
+  ignore_errors: True
+
+#- name: restart hdfs
+#  service: name=hadoop-hdfs-namenode state=restarted
+
+
+# java.io.FileNotFoundException: /usr/odp/0.9.0.1-56/hadoop/logs/namenode-metrics.log (Permission denied)
+- shell: chmod -R 777 /usr/odp/current/hadoop/logs
+
+
+- name: make the yarn log directory
+  file: path=/usr/odp/current/hadoop-yarn/logs owner=yarn group=yarn mode=777 state=directory

@@ -1,0 +1,23 @@
+clientnode.lab.net  ansible_ssh_host=10.10.10.100 ansible_ssh_private_key_file=.vagrant/machines/clientnode/virtualbox/private_key
+namenode.lab.net    ansible_ssh_host=10.10.10.10 ansible_ssh_private_key_file=.vagrant/machines/namenode/virtualbox/private_key
+datanode1.lab.net   ansible_ssh_host=10.10.10.11 ansible_ssh_private_key_file=.vagrant/machines/datanode1/virtualbox/private_key
+datanode2.lab.net   ansible_ssh_host=10.10.10.12 ansible_ssh_private_key_file=.vagrant/machines/datanode2/virtualbox/private_key
+
+[clientnodes]
+clientnode.lab.net
+
+[namenodes]
+namenode.lab.net
+
+[datanodes]
+datanode1.lab.net
+datanode2.lab.net
+
+[clusternodes:children]
+namenodes
+datanodes
+
+[all:vars]
+ansible_ssh_private_key_file=.vagrant/machines/clientnode/virtualbox/private_key
+name_node=namenode.lab.net
+name_node_ip=10.10.10.10

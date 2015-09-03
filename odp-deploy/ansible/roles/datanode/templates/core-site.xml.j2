@@ -1,0 +1,15 @@
+<configuration>
+
+  <property>
+    <!-- URI of NN. Fully qualified. No IP.-->
+    <name>fs.defaultFS</name>
+    <value>hdfs://{{ name_node }}:8020</value>
+  </property>
+
+
+  <property>
+    <name>hadoop.security.authentication</name>
+    <value>simple</value>
+  </property>
+
+</configuration>

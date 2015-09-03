@@ -1,0 +1,28 @@
+Vagrant.configure("2") do |config|
+  config.vm.provision "shell", inline: "sudo iptables -F"
+
+  config.vm.define "clientnode" do |clientnode|
+    clientnode.vm.hostname = "clientnode.lab.net"
+    clientnode.vm.box = "puppetlabs/centos-7.0-64-nocm"
+    clientnode.vm.network "private_network", ip: "10.10.10.100"
+  end
+
+  config.vm.define "namenode" do |namenode|
+    namenode.vm.hostname = "namenode.lab.net"
+    namenode.vm.box = "puppetlabs/centos-7.0-64-nocm"
+    namenode.vm.network "private_network", ip: "10.10.10.10"
+  end
+
+  config.vm.define "datanode1" do |datanode1|
+    datanode1.vm.hostname = "datanode1.lab.net"
+    datanode1.vm.box = "puppetlabs/centos-7.0-64-nocm"
+    datanode1.vm.network "private_network", ip: "10.10.10.11"
+  end
+
+  config.vm.define "datanode2" do |datanode2|
+    datanode2.vm.hostname = "datanode2.lab.net"
+    datanode2.vm.box = "puppetlabs/centos-7.0-64-nocm"
+    datanode2.vm.network "private_network", ip: "10.10.10.12"
+  end
+
+end

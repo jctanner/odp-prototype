@@ -1,0 +1,28 @@
+---
+# tasks file for clusternode
+
+- name: install common packages
+  yum: name={{ item }} state=present
+  with_items:
+    - java-1.7.0-openjdk-devel
+    - java-1.7.0-openjdk
+    - strace
+    - lsof
+    - vim-enhanced
+    - tcpdump
+    - bind-utils
+
+- name: find JAVA_HOME
+  shell: rpm -ql java-1.7.0-openjdk-devel | fgrep bin | egrep bin$ | xargs dirname
+  register: javahome
+
+- name: set JAVA_HOME for all users
+  shell: echo "export JAVA_HOME={{ javahome.stdout }}" > /etc/profile.d/java_home.sh
+
+- name: place the ODP yum repo file
+  get_url: url=http://repo.opendataplatform.org/repository/ODP/centos7/2.x/BUILDS/0.9.0.1-56/odpbn.repo dest=/etc/yum.repos.d/odpbn.repo
+
+- name: disable odp gpg check
+  lineinfile: dest=/etc/yum.repos.d/odpbn.repo regexp="gpgcheck=1" line="gpgcheck=0"
+  tags: gpgcheck
+

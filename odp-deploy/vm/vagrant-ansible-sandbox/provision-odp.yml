@@ -1,0 +1,27 @@
+- hosts: all
+  user: vagrant
+  sudo: True
+  gather_facts: False
+  roles:
+    - common
+
+- hosts: clusternodes
+  #sudo: True
+  user: root
+  gather_facts: False
+  roles:
+    - clusternode
+
+- hosts: namenodes
+  #sudo: True
+  user: root
+  gather_facts: False
+  roles:
+    - namenode
+
+- hosts: datanodes
+  #sudo: True
+  user: root
+  gather_facts: False
+  roles:
+    - datanode

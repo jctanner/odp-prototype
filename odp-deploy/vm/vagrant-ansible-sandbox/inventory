@@ -1,0 +1,19 @@
+sandbox.odplab.net  ansible_ssh_host=10.10.10.10
+
+[clientnodes]
+sandbox.odplab.net
+
+[namenodes]
+sandbox.odplab.net
+
+[datanodes]
+sandbox.odplab.net
+
+[clusternodes:children]
+namenodes
+datanodes
+
+[all:vars]
+ansible_ssh_private_key_file=.vagrant/machines/sandbox/virtualbox/private_key
+name_node=sandbox.odplab.net
+name_node_ip=10.10.10.10
