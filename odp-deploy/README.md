@@ -12,6 +12,9 @@ The ODP sandbox is a single node cluster with hdfs and yarn. It also serves as a
 4. cd odp-deploy/vm/vagrant-ansible-sandbox
 5. vagrant up
 6. ansible-playbook provision-sandbox.yml
+7. vagrant ssh
+8. cd /opt/odp-scripts
+9. bash run_itest.sh
 
 ## ODP Cluster
 This is still a work in progress but the roles are mostly complete. 
