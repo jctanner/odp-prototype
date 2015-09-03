@@ -11,6 +11,9 @@
     - vim-enhanced
     - tcpdump
     - bind-utils
+    - telnet
+    - sysstat
+    - sos
 
 - name: find JAVA_HOME
   shell: rpm -ql java-1.7.0-openjdk-devel | fgrep bin | egrep bin$ | xargs dirname

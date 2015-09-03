@@ -64,6 +64,9 @@
 - name: create the core-site.xml
   template: src=core-site.xml.j2 dest=/etc/hadoop/conf/core-site.xml
 
+- name: create the yarn-site.xml
+  template: src=yarn-site.xml.j2 dest=/etc/hadoop/conf/yarn-site.xml
+
 # Directory /tmp/hadoop-hdfs/dfs/name is in an inconsistent state: storage directory does not exist or is not accessible
 - name: make sure dirs exist
   file: path={{ item }} state=directory owner=hdfs group=hdfs 
@@ -85,6 +88,11 @@
 # java.io.FileNotFoundException: /usr/odp/0.9.0.1-56/hadoop/logs/namenode-metrics.log (Permission denied)
 - shell: chmod -R 777 /usr/odp/current/hadoop/logs
 
-
 - name: make the yarn log directory
   file: path=/usr/odp/current/hadoop-yarn/logs owner=yarn group=yarn mode=777 state=directory
+
+- name: chkconfig services on
+  service: name={{ item }} enabled=yes
+  with_items:
+    - hadoop-hdfs-namenode
+    - hadoop-yarn-resourcemanager

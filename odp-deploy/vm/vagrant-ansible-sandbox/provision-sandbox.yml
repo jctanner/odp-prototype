@@ -1,0 +1,15 @@
+- hosts: sandbox.odp.org
+  user: vagrant
+  sudo: True
+  gather_facts: False
+  roles:
+    - common
+
+- hosts: sandbox.odp.org
+  user: root
+  gather_facts: False
+  roles:
+    - clusternode
+    - namenode
+    - datanode
+    - sandbox

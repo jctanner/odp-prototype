@@ -2,7 +2,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: "sudo iptables -F"
 
   config.vm.define "sandbox" do |sandbox|
-    sandbox.vm.hostname = "sandbox.odplab.net"
+    sandbox.vm.hostname = "sandbox.odp.org"
     sandbox.vm.box = "puppetlabs/centos-7.0-64-nocm"
     sandbox.vm.network "private_network", ip: "10.10.10.10"
   end

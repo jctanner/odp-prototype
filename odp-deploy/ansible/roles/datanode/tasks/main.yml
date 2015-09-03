@@ -58,23 +58,14 @@
 - name: create the core-site.xml
   template: src=core-site.xml.j2 dest=/etc/hadoop/conf/core-site.xml
 
+- name: create the yarn-site.xml
+  template: src=yarn-site.xml.j2 dest=/etc/hadoop/conf/yarn-site.xml
+
 # Directory /tmp/hadoop-hdfs/dfs/name is in an inconsistent state: storage directory does not exist or is not accessible
 - name: make sure dirs exist
   file: path={{ item }} state=directory owner=hdfs group=hdfs 
   with_items:
     - /tmp/hadoop-hdfs/dfs/name
-
-# java.io.IOException: NameNode is not formatted.
-# Re-format filesystem in Storage Directory /tmp/hadoop-hdfs/dfs/name ? (Y or N)
-#- name: format the namenode
-#  shell: echo -e "N\n" | hadoop namenode -format
-#  sudo: true
-#  sudo_user: hdfs
-#  ignore_errors: True
-
-#- name: restart hdfs
-#  service: name=hadoop-hdfs-namenode state=restarted
-
 
 # java.io.FileNotFoundException: /usr/odp/0.9.0.1-56/hadoop/logs/namenode-metrics.log (Permission denied)
 - shell: chmod -R 777 /usr/odp/current/hadoop/logs
@@ -87,3 +78,15 @@
     dest=/etc/hosts
     state=present
     line="{{ name_node_ip + ' ' + name_node }}"
+
+
+########################################
+#   SERVICES 
+########################################
+
+- name: chkconfig services on
+  service: name={{ item }} enabled=yes
+  with_items:
+    - hadoop-hdfs-datanode
+    - hadoop-yarn-nodemanager
+

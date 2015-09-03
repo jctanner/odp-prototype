@@ -1,0 +1,28 @@
+---
+# tasks file for sandbox
+
+# THE INITSCRIPTS ARE NOT SYSTEMD COMPLIANT
+#- name: start all services
+#  service: name={{ item }} state=started
+#  with_items:
+#    - hadoop-hdfs-namenode
+#    - hadoop-hdfs-datanode
+#    - hadoop-yarn-resourcemanager
+#    - hadoop-yarn-nodemanager
+#  ignore_errors: true
+
+- name: create common hdfs dirs
+  shell: hadoop fs -mkdir -p {{ item }}
+  with_items:
+    - /tmp
+    - /user/root
+    - /user/hdfs
+    - /var/log/hadoop-yarn/apps/root
+  sudo: true
+  sudo_user: hdfs
+
+- name: set mode
+  shell: hadoop fs -chmod -R 777 /
+  sudo: true
+  sudo_user: hdfs
+
