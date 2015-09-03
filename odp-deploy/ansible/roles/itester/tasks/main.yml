@@ -1,0 +1,11 @@
+---
+# tasks file for itester
+
+- name: get jctanner odp-scripts
+  git: repo=https://github.com/jctanner/odp-scripts.git dest=/opt/odp-scripts update=yes
+
+- name: install itest prerequisite packages
+  yum: name={{ item }} state=present
+  with_items:
+    - unzip
+    - links

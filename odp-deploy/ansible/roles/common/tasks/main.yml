@@ -1,6 +1,9 @@
 ---
 # tasks file for common
 
+- name: set a root password
+  shell: echo "root:odp2105" | chpasswd
+
 - name: get rid of vagrant's bad entry in /etc/hosts
   lineinfile: 
     state=present
