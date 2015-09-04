@@ -87,10 +87,10 @@
 
 # java.io.FileNotFoundException: /usr/odp/0.9.0.1-56/hadoop/logs/namenode-metrics.log (Permission denied)
 - shell: chmod -R 777 /usr/odp/current/hadoop/logs
-- shell: chmod -R 777 /usr/odp/current/hadoop-yarn/logs
 
 - name: make the yarn log directory
   file: path=/usr/odp/current/hadoop-yarn/logs owner=yarn group=yarn mode=777 state=directory
+- shell: chmod -R 777 /usr/odp/current/hadoop-yarn/logs
 
 - name: chkconfig services on
   service: name={{ item }} enabled=yes

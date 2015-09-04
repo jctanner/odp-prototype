@@ -1,0 +1,15 @@
+[Unit]
+Description=ODP Sandbox
+Wants=network.target network-online.target
+After=network.target network-online.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/opt/bin/sandbox_start.sh
+ExecStop=/opt/bin/sandbox_stop.sh
+Restart=on-abort
+
+
+[Install]
+WantedBy=multi-user.target

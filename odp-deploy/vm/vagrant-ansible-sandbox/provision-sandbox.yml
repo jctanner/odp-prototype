@@ -12,5 +12,5 @@
     - clusternode
     - namenode
     - datanode
-    - sandbox
     - itester
+    - sandbox

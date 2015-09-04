@@ -14,6 +14,7 @@ namenodes
 datanodes
 
 [all:vars]
-ansible_ssh_private_key_file=.vagrant/machines/sandbox/virtualbox/private_key
+#ansible_ssh_private_key_file=.vagrant/machines/sandbox/virtualbox/private_key
+ansible_ssh_private_key_file=/home/jtanner/.vagrant.d/insecure_private_key
 name_node=sandbox.odp.org
 name_node_ip=10.10.10.10

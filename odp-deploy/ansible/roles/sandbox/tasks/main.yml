@@ -1,15 +1,48 @@
 ---
 # tasks file for sandbox
 
-# THE INITSCRIPTS ARE NOT SYSTEMD COMPLIANT
-#- name: start all services
-#  service: name={{ item }} state=started
-#  with_items:
-#    - hadoop-hdfs-namenode
-#    - hadoop-hdfs-datanode
-#    - hadoop-yarn-resourcemanager
-#    - hadoop-yarn-nodemanager
-#  ignore_errors: true
+- name: add epel
+  yum: name=epel-release state=present
+
+- name: add extra packages
+  yum: name={{ item }} state=present
+  with_items:
+    - facter
+    - ansible
+
+# THE INITSCRIPTS ARE NOT SYSTEMD COMPLIANT 
+# AND WE NEED TO SET THE HOSTS FILE BEFORE STARTUP
+- name: start all services
+  service: name={{ item }} enabled=no
+  with_items:
+    - hadoop-hdfs-namenode
+    - hadoop-hdfs-datanode
+    - hadoop-yarn-resourcemanager
+    - hadoop-yarn-nodemanager
+  ignore_errors: true
+
+- name: place the sandbox init script
+  copy: src=sandbox.service dest=/etc/systemd/system/sandbox.service mode=755
+
+- name: make the opt/bin dir
+  file: path=/opt/bin state=directory
+
+- name: place the sandbox start script
+  copy: src=sandbox_start.sh dest=/opt/bin/sandbox_start.sh mode=755
+- name: place the sandbox stop script
+  copy: src=sandbox_stop.sh dest=/opt/bin/sandbox_stop.sh mode=755
+
+- name: set the service to start on boot
+  shell: systemctl enable /etc/systemd/system/sandbox.service
+
+############### HDFS SCHEMA 
+
+#- name: start sandbox
+#  service: name=sandbox.service state=started
+#  register: startup
+
+- name: wait for hdfs to start
+  wait_for: port=8020 delay=2 host=sandbox.odp.org
 
 - name: create common hdfs dirs
   shell: hadoop fs -mkdir -p {{ item }}
@@ -22,7 +55,12 @@
   sudo_user: hdfs
 
 - name: set mode
-  shell: hadoop fs -chmod -R 777 /
+  shell: hadoop fs -chmod -R 777 {{ item }}
+  with_items:
+    - /user
+    - /tmp
+    - /var
   sudo: true
   sudo_user: hdfs
+
 
