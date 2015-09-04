@@ -1,9 +1,6 @@
 ---
 # tasks file for common
 
-- name: set a root password
-  shell: echo "root:odp2105" | chpasswd
-
 - name: get rid of vagrant's bad entry in /etc/hosts
   lineinfile: 
     state=present
@@ -17,10 +14,18 @@
 #####################################  
 # FIX PUPPET BOX's BUSTED SSHD ...
 #####################################  
-- name: Set the sshd_config back to the original
-  copy: src=sshd_config.el7 dest=/etc/ssh/sshd_config
-  register: sshdcopy
 
-- service: name=sshd state=restarted
-  when: sshdcopy.changed
+- name: fix the sftp-server path
+  lineinfile:
+    state=present
+    regexp='Subsystem sftp /.*/sftp-server'
+    line='Subsystem sftp /usr/libexec/openssh/sftp-server'
+    dest=/etc/ssh/sshd_config
+  register: lf
 
+- name: restart sshd
+  service: name=sshd state=restarted
+  when: lf.changed
+
+- name: set a root password
+  shell: echo "root:odp2105" | chpasswd
