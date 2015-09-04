@@ -37,11 +37,18 @@
 
 ############### HDFS SCHEMA 
 
+- name: check hdfs port
+  shell: lsof -i :8020
+  ignore_errors: true
+  register: hdfs_check
+
 - name: start sandbox
   shell: systemctl start sandbox.service
+  when: hdfs_check.rc != 0
 
 - name: wait for hdfs to start
   wait_for: port=8020 delay=2 host=sandbox.odp.org
+  when: hdfs_check.rc != 0
 
 - name: create common hdfs dirs
   shell: hadoop fs -mkdir -p {{ item }}
