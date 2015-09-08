@@ -1,0 +1,110 @@
+---
+# tasks file for hive_latest
+# https://cwiki.apache.org/confluence/display/Hive/GettingStarted#GettingStarted-InstallingHivefromaStableRelease
+
+- name: get the latest release tarball
+  get_url: 
+    url=http://apache.mirrors.pair.com/hive/stable/apache-hive-1.2.1-bin.tar.gz
+    dest=/tmp/apache-hive-1.2.1-bin.tar.gz
+
+- name: extract tarball
+  shell: cd /usr/odp/{{ odp_version }} ; tar xzvf /tmp/apache-hive-1.2.1-bin.tar.gz creates=apache-hive-1.2.1-bin
+
+- name: make symlink for odp's hive-client
+  file:
+    src=apache-hive-1.2.1-bin
+    dest=/usr/odp/{{ odp_version }}/hive
+    state=link
+
+- name: make symlink in current
+  file: 
+    src=/usr/odp/{{ odp_version }}/apache-hive-1.2.1-bin 
+    dest=/usr/odp/current/hive-server 
+    state=link
+
+#- name: make symlink for /usr/bin/hive
+#  file:
+#    src=/usr/odp/current/hive-client/bin/{{ item }}
+#    dest=/usr/bin/{{ item }}
+#    state=link
+#  with_items:
+#    - hive
+#    - beeline
+#    - hive-config.sh
+
+- name: copy the hive and beeline scripts
+  copy: src={{ item }} dest=/usr/bin/{{ item }} mode=755
+  with_items:
+    - hive
+    - beeline
+
+- name: create hive warehouse
+  shell: "{{ item }}"
+  sudo: true
+  sudo_user: hdfs    
+  with_items:
+    - hadoop fs -mkdir -p /user/hive/warehouse
+    - hadoop fs -chmod g+w /user/hive/warehouse
+
+- name: create /etc/hive/conf and /etc/hive/conf.server
+  file: path=/etc/hive/{{ item }} state=directory
+  with_items:
+    - conf
+    - conf.server
+
+- name: remove /usr/odp/{{ odp_version }}/apache-hive-1.2.1-bin/conf
+  shell: if [ -d /usr/odp/{{ odp_version }}/apache-hive-1.2.1-bin/conf ]; then rm -rf /usr/odp/{{ odp_version }}/apache-hive-1.2.1-bin/conf; fi
+
+- name: symlink hive conf to /etc/hive/conf and /etc/hive/conf.server
+  file: 
+    src=/etc/hive/{{ item }}
+    dest=/usr/odp/{{ odp_version }}/apache-hive-1.2.1-bin/{{ item }}
+    state=link
+  with_items:
+    - conf
+    - conf.server
+
+- name: create the client hive-site.xml
+  template: 
+    src=hive-site.xml.j2 
+    dest=/etc/hive/conf/hive-site.xml
+
+- name: create the server hive-site.xml
+  template: 
+    src=hive-site-server.xml.j2 
+    dest=/etc/hive/conf.server/hive-site.xml
+
+
+# http://www.cloudera.com/content/cloudera/en/documentation/archives/cdh3/v3u6/CDH3-Installation-Guide/cdh3ig_topic_16_3.html
+
+- name: install mysql packages
+  yum: name={{ item }} state=present
+  with_items:
+    - mariadb-server
+    - mariadb-libs
+    - mariadb 
+    - mysql-connector-java
+
+- name: add the mysql jdbc jar to hive's classpath
+  file:
+    src=/usr/share/java/mysql-connector-java.jar 
+    dest=/usr/odp/{{ odp_version }}/apache-hive-1.2.1-bin/lib/mysql-connector-java.jar
+    state=link
+
+- name: enable mariadb
+  service: name=mariadb enabled=true state=started
+
+- name: create the metastore schema
+  shell: "{{ item }}"
+  with_items:
+    - mysql -e "CREATE DATABASE IF NOT EXISTS metastore"
+    - cd /usr/odp/current/hive-server/scripts/metastore/upgrade/mysql; mysql -e "USE metastore; SOURCE hive-schema-1.2.0.mysql.sql ;"
+
+- name: create the hive mysql user
+  shell: "{{ item }}"
+  with_items:
+    - mysql -e "grant all on metastore.* to 'hive'@'%' identified by 'hive';"
+    #- mysql -e "CREATE USER 'hive'@'%' IDENTIFIED BY 'hive';"
+    #- mysql -e "GRANT SELECT,INSERT,UPDATE,DELETE ON metastore.* TO 'hiveuser'@'%';"
+    #- mysql -e "REVOKE ALTER,CREATE ON metastore.* FROM 'hiveuser'@'%';"
+
