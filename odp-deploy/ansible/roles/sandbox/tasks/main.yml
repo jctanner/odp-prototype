@@ -10,6 +10,12 @@
     - facter
     - ansible
 
+- name: set the hostname
+  hostname: name=sandbox.odp.org
+
+- name: set a root password
+  shell: echo "root:odp2015" | chpasswd
+
 # THE INITSCRIPTS ARE NOT SYSTEMD COMPLIANT 
 # AND WE NEED TO SET THE HOSTS FILE BEFORE STARTUP
 - name: start all services

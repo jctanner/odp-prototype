@@ -18,14 +18,16 @@
 - name: fix the sftp-server path
   lineinfile:
     state=present
-    regexp='Subsystem sftp /.*/sftp-server'
-    line='Subsystem sftp /usr/libexec/openssh/sftp-server'
+    regexp='Subsystem.*sftp.*/.*/sftp-server'
+    line='Subsystem\tsftp\t/usr/libexec/openssh/sftp-server'
     dest=/etc/ssh/sshd_config
   register: lf
+  tags: sshd
 
 - name: restart sshd
   service: name=sshd state=restarted
   when: lf.changed
+  tags: sshd
 
-- name: set a root password
-  shell: echo "root:odp2105" | chpasswd
+#- name: set a root password
+#  shell: echo "root:odp2015" | chpasswd
