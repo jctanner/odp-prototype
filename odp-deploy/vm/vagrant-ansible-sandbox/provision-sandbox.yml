@@ -12,5 +12,6 @@
     - clusternode
     - namenode
     - datanode
+    - { role: hive_latest, odp_version: '0.9.0.1-56', tags: ['hive'] }
     - itester
     - sandbox

@@ -104,7 +104,6 @@
   shell: "{{ item }}"
   with_items:
     - mysql -e "grant all on metastore.* to 'hive'@'%' identified by 'hive';"
-    #- mysql -e "CREATE USER 'hive'@'%' IDENTIFIED BY 'hive';"
-    #- mysql -e "GRANT SELECT,INSERT,UPDATE,DELETE ON metastore.* TO 'hiveuser'@'%';"
-    #- mysql -e "REVOKE ALTER,CREATE ON metastore.* FROM 'hiveuser'@'%';"
+
+- 
 
